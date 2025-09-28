@@ -1,15 +1,239 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model acceso {
+  pk_acceso    Int       @id @default(autoincrement())
+  fk_id_cia    Int?
+  fk_id_datos  Int?
+  clave        String?   @db.VarChar(255)
+  record       DateTime? @db.DateTime(0)
+  fk_id_estado Int?
+  fk_modulos   Int?
+  cia          cia?      @relation(fields: [fk_id_cia], references: [pk_id_cia], map: "fk_acceso_cia")
+  datos        datos?    @relation(fields: [fk_id_datos], references: [id], map: "fk_acceso_datos")
+  estado       estado?   @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_acceso_estado")
+  modulos      modulos?  @relation(fields: [fk_modulos], references: [pk_modulos], map: "fk_acceso_modulos")
+
+  @@index([fk_id_cia], map: "fk_acceso_cia")
+  @@index([fk_id_datos], map: "fk_acceso_datos")
+  @@index([fk_id_estado], map: "fk_acceso_estado")
+  @@index([fk_modulos], map: "fk_acceso_modulos")
+}
+
+model asignaturas {
+  pk_id_materia  Int           @id @default(autoincrement())
+  nombre_materia String?       @db.VarChar(50)
+  mov_asig_au    mov_asig_au[]
+  preofe_mate    preofe_mate[]
+}
+
+model aulas {
+  pk_id_aulas Int           @id @default(autoincrement())
+  nombre_aula String?       @db.VarChar(50)
+  mov_asig_au mov_asig_au[]
+}
+
+model cargo {
+  pk_id_cargo  Int     @id @default(autoincrement())
+  nombre_cargo String  @db.VarChar(100)
+  fk_id_estado Int?
+  estado       estado? @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_cargo_estado")
+  datos        datos[]
+
+  @@index([fk_id_estado], map: "fk_cargo_estado")
+}
+
+model cia {
+  pk_id_cia    Int           @id @default(autoincrement())
+  nombres      String?       @db.VarChar(100)
+  direccion    String?       @db.VarChar(100)
+  telefono     String?       @db.VarChar(50)
+  contacto     String?       @db.VarChar(50)
+  web          String?       @db.VarChar(100)
+  e_mail       String?       @db.VarChar(254)
+  record       DateTime?     @db.DateTime(0)
+  usuario      String?       @db.VarChar(50)
+  fk_pk_estado Int?
+  acceso       acceso[]
+  estado       estado?       @relation(fields: [fk_pk_estado], references: [pk_id_estado], map: "fk_cia_estado")
+  mov_asig_au  mov_asig_au[]
+
+  @@index([fk_pk_estado], map: "fk_cia_estado")
+}
+
+model civil {
+  pk_id_civil  Int     @id @default(autoincrement())
+  nombre_civil String  @db.VarChar(50)
+  fk_id_estado Int?
+  estado       estado? @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_civil_estado")
+  datos        datos[]
+
+  @@index([fk_id_estado], map: "fk_civil_estado")
+}
+
+model datos {
+  id               Int           @id @default(autoincrement())
+  fk_usuario       Int?
+  fk_id_cargo      Int?
+  fk_id_doc        Int?
+  primer_nombre    String?       @db.VarChar(50)
+  segundo_nombre   String?       @db.VarChar(50)
+  primer_apellido  String?       @db.VarChar(50)
+  segundo_apellido String?       @db.VarChar(50)
+  fk_id_gene       Int?
+  fecha_naci       DateTime?     @db.Date
+  fk_id_civil      Int?
+  direccion        String?       @db.VarChar(100)
+  telefono         String?       @db.VarChar(50)
+  celular          String?       @db.VarChar(50)
+  e_mail           String?       @db.VarChar(254)
+  record           DateTime?     @db.DateTime(0)
+  usuario_id       Int?
+  fk_id_estado     Int?
+  acceso           acceso[]
+  cargo            cargo?        @relation(fields: [fk_id_cargo], references: [pk_id_cargo], map: "fk_datos_cargo")
+  civil            civil?        @relation(fields: [fk_id_civil], references: [pk_id_civil], map: "fk_datos_civil")
+  documento        documento?    @relation(fields: [fk_id_doc], references: [pk_id_doc], map: "fk_datos_doc")
+  estado           estado?       @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_datos_estado")
+  genero           genero?       @relation(fields: [fk_id_gene], references: [pk_id_gene], map: "fk_datos_genero")
+  preofe_mate      preofe_mate[]
+
+  @@index([fk_id_cargo], map: "fk_datos_cargo")
+  @@index([fk_id_civil], map: "fk_datos_civil")
+  @@index([fk_id_doc], map: "fk_datos_doc")
+  @@index([fk_id_estado], map: "fk_datos_estado")
+  @@index([fk_id_gene], map: "fk_datos_genero")
+}
+
+model documento {
+  pk_id_doc        Int     @id @default(autoincrement())
+  nombre_documento String  @db.VarChar(50)
+  fk_id_estado     Int?
+  datos            datos[]
+  estado           estado? @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_doc_estado")
+
+  @@index([fk_id_estado], map: "fk_doc_estado")
+}
+
+model estado {
+  pk_id_estado Int           @id @default(autoincrement())
+  nombre       String        @db.VarChar(50)
+  acceso       acceso[]
+  cargo        cargo[]
+  cia          cia[]
+  civil        civil[]
+  datos        datos[]
+  documento    documento[]
+  genero       genero[]
+  mov_asig_au  mov_asig_au[]
+  preofe_mate  preofe_mate[]
+  tipo_status  tipo_status[]
+}
+
+model genero {
+  pk_id_gene   Int     @id @default(autoincrement())
+  nom_genero   String  @db.VarChar(40)
+  fk_id_estado Int?
+  datos        datos[]
+  estado       estado? @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_genero_estado")
+
+  @@index([fk_id_estado], map: "fk_genero_estado")
+}
+
+model horarios {
+  pk_id_horarios Int           @id @default(autoincrement())
+  asig_horario   String?       @db.VarChar(50)
+  mov_asig_au    mov_asig_au[]
+}
+
+model laboratorio {
+  pk_id_laboratorio  Int           @id @default(autoincrement())
+  nombre_laboratorio String?       @db.VarChar(50)
+  mov_asig_au        mov_asig_au[]
+}
+
+model modulos {
+  pk_modulos Int      @id @default(autoincrement())
+  nombre     String   @db.VarChar(50)
+  acceso     acceso[]
+}
+
+model mov_asig_au {
+  pk_id_mov_asig_au Int          @id @default(autoincrement())
+  fk_id_cia         Int
+  fk_id_mate        Int
+  fk_tipo_status    Int
+  fk_id_pregrados   Int
+  fk_id_horarios    Int
+  fk_id_materias    Int
+  record            DateTime     @db.DateTime(0)
+  fk_id_estado      Int
+  fk_id_aula        Int?
+  fk_id_laboratorio Int?
+  fk_id_semestre    Int?
+  aulas             aulas?       @relation(fields: [fk_id_aula], references: [pk_id_aulas], map: "fk_mov_aula")
+  cia               cia          @relation(fields: [fk_id_cia], references: [pk_id_cia], onDelete: Cascade, map: "fk_mov_cia")
+  estado            estado       @relation(fields: [fk_id_estado], references: [pk_id_estado], onDelete: Cascade, map: "fk_mov_estado")
+  horarios          horarios     @relation(fields: [fk_id_horarios], references: [pk_id_horarios], onDelete: Cascade, map: "fk_mov_horarios")
+  laboratorio       laboratorio? @relation(fields: [fk_id_laboratorio], references: [pk_id_laboratorio], map: "fk_mov_lab")
+  preofe_mate       preofe_mate  @relation(fields: [fk_id_mate], references: [pk_id_mate], onDelete: Cascade, map: "fk_mov_mate")
+  asignaturas       asignaturas  @relation(fields: [fk_id_materias], references: [pk_id_materia], onDelete: Cascade, map: "fk_mov_materias")
+  pregrado          pregrado     @relation(fields: [fk_id_pregrados], references: [pk_id_pregrado], onDelete: Cascade, map: "fk_mov_pregrados")
+  semestre          semestre?    @relation(fields: [fk_id_semestre], references: [pk_id_semestre], map: "fk_mov_semestre")
+  tipo_status       tipo_status  @relation(fields: [fk_tipo_status], references: [pk_id_tipo_status], onDelete: Cascade, map: "fk_mov_tipo_status")
+
+  @@index([fk_id_aula], map: "fk_mov_aula")
+  @@index([fk_id_cia], map: "fk_mov_cia")
+  @@index([fk_id_estado], map: "fk_mov_estado")
+  @@index([fk_id_horarios], map: "fk_mov_horarios")
+  @@index([fk_id_laboratorio], map: "fk_mov_lab")
+  @@index([fk_id_mate], map: "fk_mov_mate")
+  @@index([fk_id_materias], map: "fk_mov_materias")
+  @@index([fk_id_pregrados], map: "fk_mov_pregrados")
+  @@index([fk_id_semestre], map: "fk_mov_semestre")
+  @@index([fk_tipo_status], map: "fk_mov_tipo_status")
+}
+
+model pregrado {
+  pk_id_pregrado  Int           @id @default(autoincrement())
+  nombre_pregrado String?       @db.VarChar(50)
+  mov_asig_au     mov_asig_au[]
+}
+
+model preofe_mate {
+  pk_id_mate    Int           @id @default(autoincrement())
+  fk_id_datos   Int?
+  fk_id_materia Int?
+  fk_id_estado  Int?
+  mov_asig_au   mov_asig_au[]
+  datos         datos?        @relation(fields: [fk_id_datos], references: [id], map: "fk_preofe_datos")
+  estado        estado?       @relation(fields: [fk_id_estado], references: [pk_id_estado], map: "fk_preofe_estado")
+  asignaturas   asignaturas?  @relation(fields: [fk_id_materia], references: [pk_id_materia], map: "fk_preofe_materia")
+
+  @@index([fk_id_datos], map: "fk_preofe_datos")
+  @@index([fk_id_estado], map: "fk_preofe_estado")
+  @@index([fk_id_materia], map: "fk_preofe_materia")
+}
+
+model semestre {
+  pk_id_semestre  Int           @id @default(autoincrement())
+  nombre_semestre String?       @db.VarChar(50)
+  mov_asig_au     mov_asig_au[]
+}
+
+model tipo_status {
+  pk_id_tipo_status  Int           @id @default(autoincrement())
+  nombre_tipo_status String        @db.VarChar(50)
+  fk_id_estado       Int
+  mov_asig_au        mov_asig_au[]
+  estado             estado        @relation(fields: [fk_id_estado], references: [pk_id_estado], onDelete: Cascade, map: "fk_tipo_status_estado")
+
+  @@index([fk_id_estado], map: "fk_tipo_status_estado")
 }
