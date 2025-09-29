@@ -1,0 +1,22 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Env
+.env
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# Docker
+db_data/
+docker-compose/.env
+
+# Build
+dist/
+build/
+
+# Misc
+.DS_Store
